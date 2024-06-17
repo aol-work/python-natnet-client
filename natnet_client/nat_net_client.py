@@ -66,6 +66,7 @@ class NatNetClient:
 
         self.__on_data_frame_received_event = Event()
         self.__on_data_description_received_event = Event()
+        self.__on_request_response_received_raw_event = Event()
 
     @property
     def connected(self):
@@ -154,6 +155,9 @@ class NatNetClient:
             elif message_id == self.NAT_MODELDEF:
                 data_descs = DataDescriptions.read_from_buffer(buffer, self.__current_protocol_version)
                 self.__on_data_description_received_event.call(data_descs)
+            elif message_id == self.NAT_RESPONSE:
+                self.__on_request_response_received_raw_event.call(buffer)
+
     def send_request(self, command: int, command_str: str = ""):
         if command in [self.NAT_REQUEST_MODELDEF, self.NAT_REQUEST_FRAMEOFDATA, self.NAT_KEEPALIVE]:
             command_str = ""
@@ -252,6 +256,10 @@ class NatNetClient:
     @property
     def on_data_description_received_event(self) -> Event:
         return self.__on_data_description_received_event
+    
+    @property
+    def on_request_response_received_raw_event(self) -> Event:
+        return self.__on_request_response_received_raw_event
 
     @property
     def server_info(self) -> Optional[ServerInfo]:

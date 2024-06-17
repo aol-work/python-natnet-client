@@ -58,6 +58,36 @@ Apart from requesting model definitions, the `NatNetClient` class allows sending
 via the `send_command` and `send_request` functions. For a list of different commands and requests, please refer to the
 official documentations.
 
+## Remote Requests / Commands
+
+The library has limited support for [Remote Requests/Commands]
+(https://docs.optitrack.com/developer-tools/natnet-sdk/natnet-remote-requests-commands).
+
+Here is one example of receiving the current frame rate. You can register a callback
+for raw responses and then send the command.
+with:
+
+```python
+# ...
+from natnet_client import PacketBuffer
+# ...
+def receive_new_response_raw(databuf: PacketBuffer):
+  # We know this is a GetFrameRate command, as we only sent a request for this
+  # command, so we can assume we receive exactly one float as to the documentation.
+  print(f"Current frame rate: {databuf.read_float()}")
+
+# ... other initialization code...
+streaming_client.on_response_received_raw_event.handlers.append(
+        receive_new_response_raw)
+# ...after initialization...
+streaming_client.send_command("GetFrameRate")
+# ...
+```
+
+Not that you need to handle the send / receive flow yourself. If you send
+multiple commands at once, you will not be able to distinguish by the callback
+parameters alone which response belongs to which command.
+
 ## Notes
 
 As of Motive version 2.3, the marker positions of rigid bodies are only transmitted correctly if "Y-up" is selected in
